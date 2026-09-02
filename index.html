@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHAMBA RD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#0a0a0a;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px 10px}
+.container{background:#1a1a1a;padding:30px 25px;border-radius:20px;width:100%;max-width:480px;box-shadow:0 0 25px rgba(0,255,136,.15);border:1px solid #282828}
+.header{text-align:center;margin-bottom:20px}
+h2{color:#00ff88;font-size:26px;letter-spacing:1px;margin-bottom:4px}
+.tagline{color:#888;font-size:13px}
+.user-badge{background:#112a1f;border:1px solid #00ff88;color:#00ff88;padding:6px 12px;border-radius:20px;font-size:12px;display:inline-block;margin-top:8px}
+input, textarea, select{width:100%;padding:12px 14px;margin:8px 0;border-radius:10px;border:1px solid #333;background:#222;color:#fff;font-size:15px;font-family:inherit}
+textarea{resize:vertical;min-height:70px}
+input:focus, textarea:focus, select:focus{outline:none;border-color:#00ff88;box-shadow:0 0 8px rgba(0,255,136,.25)}
+button{width:100%;padding:13px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:15px;transition:all .2s ease}
+button:hover{opacity:.9;transform:translateY(-1px)}
+button.secondary{background:#222;color:#00ff88;border:1px solid #00ff88;margin-top:8px}
+button.danger{background:#ff4d4d;color:#fff}
+#mensaje{text-align:center;margin-top:12px;font-weight:bold;font-size:14px;min-height:20px}
+.section-title{color:#00ff88;font-size:16px;margin:18px 0 10px 0;font-weight:bold;display:flex;align-items:center;justify-content:space-between}
+.chamba-card{background:#222;border:1px solid #333;border-radius:12px;padding:14px;margin-bottom:12px}
+.chamba-card h4{color:#fff;font-size:16px;margin-bottom:4px}
+.chamba-card p{color:#aaa;font-size:13px;margin-bottom:8px;line-height:1.4}
+.chamba-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#888;border-top:1px solid #2e2e2e;padding-top:8px}
+.chamba-price{color:#00ff88;font-weight:bold;font-size:14px}
+.btn-whatsapp{background:#25D366!important;color:#fff!important;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:bold;margin-top:8px;width:100%;text-align:center;box-sizing:border-box}
+.btn-whatsapp:hover{background:#20bd5a!important}
+.badge{background:#00ff88;color:#000;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:bold}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h2>CHAMBA RD</h2>
+    <div class="tagline">TRABAJO • SERVICIOS • OPORTUNIDADES 🇩🇴</div>
+    <div id="userBadge" class="user-badge hidden"></div>
+  </div>
+
+  <!-- SECCIÓN 1: LOGIN / REGISTRO -->
+  <div id="authSection">
+    <input type="email" id="email" placeholder="Correo electrónico">
+    <input type="password" id="password" placeholder="Contraseña (mínimo 6 caracteres)">
+    <button id="btnRegister">Registrar Cuenta</button>
+    <button id="btnLogin" class="secondary">Iniciar Sesión</button>
+  </div>
+
+  <!-- SECCIÓN 2: PANEL DE USUARIO (PERFIL Y PUBLICAR) -->
+  <div id="userPanelSection" class="hidden">
+    <div class="section-title">
+      <span>⚙️ Mi Cuenta</span>
+      <button id="btnLogout" style="width:auto;padding:4px 10px;font-size:11px;margin:0" class="secondary">Cerrar Sesión</button>
+    </div>
+
+    <!-- Pestañas de navegación de usuario -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button id="tabPerfilBtn" style="margin-top:0;padding:8px 12px;font-size:13px;flex:1;background:#00ff88;color:#000;">👤 Mi Perfil</button>
+      <button id="tabPublicarBtn" class="secondary" style="margin-top:0;padding:8px 12px;font-size:13px;flex:1;">📢 Publicar Chamba</button>
+    </div>
+
+    <!-- FORMULARIO DE PERFIL DE USUARIO -->
+    <div id="profileFormContainer" style="background:#222;border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:14px;">
+      <h3 style="color:#00ff88;font-size:16px;margin-bottom:8px">📝 Completa o Actualiza tu Perfil</h3>
+      <p style="color:#aaa;font-size:12px;margin-bottom:12px">Estos datos se guardarán en tu documento de Firestore (colección <b>users</b>).</p>
+      
+      <label style="font-size:12px;color:#aaa">Nombre Completo</label>
+      <input type="text" id="perfilNombre" placeholder="Ej: Carlos Ramírez">
+      
+      <label style="font-size:12px;color:#aaa">Número de Teléfono / WhatsApp</label>
+      <input type="tel" id="perfilTelefono" placeholder="Ej: 809-555-0199">
+      
+      <label style="font-size:12px;color:#aaa">Rol en la plataforma</label>
+      <select id="perfilRol">
+        <option value="admin">👑 Administrador (Control total)</option>
+        <option value="cliente">👤 Cliente (Busco contratar servicios)</option>
+        <option value="chambeador">🛠️ Chambeador (Ofrezco servicios / Oficios)</option>
+      </select>
+
+      <label style="font-size:12px;color:#aaa">Ciudad / Sector</label>
+      <input type="text" id="perfilUbicacion" placeholder="Ej: Santo Domingo Este">
+
+      <button id="btnActualizarPerfil">💾 Guardar / Actualizar Perfil</button>
+    </div>
+
+    <!-- FORMULARIO DE PUBLICAR CHAMBA -->
+    <div id="publishFormContainer" class="hidden" style="background:#222;border:1px solid #333;border-radius:12px;padding:16px;margin-bottom:14px;">
+      <h3 style="color:#00ff88;font-size:16px;margin-bottom:12px">📢 Publicar Nueva Chamba</h3>
+      
+      <input type="text" id="chambaTitulo" placeholder="Título (ej: Pintar sala y habitación)">
+      <select id="chambaCategoria">
+        <option value="Hogar / Pintura">🏠 Hogar / Pintura</option>
+        <option value="Hogar / Electricidad">⚡ Hogar / Electricidad</option>
+        <option value="Hogar / Plomería">🔧 Hogar / Plomería</option>
+        <option value="Construcción / Albañilería">🧱 Construcción / Albañilería</option>
+        <option value="Mecánica Automotriz">🚗 Mecánica Automotriz</option>
+        <option value="Transporte / Mudanzas">📦 Transporte / Mudanzas</option>
+        <option value="Tecnología / Redes">💻 Tecnología / Redes</option>
+        <option value="Otros Servicios">🛠️ Otros Servicios</option>
+      </select>
+      <select id="chambaUbicacionSelect" style="margin-bottom:8px;" onchange="if(this.value!=='') document.getElementById('chambaUbicacion').value=this.value">
+        <option value="">-- Seleccionar Zona Rápida (RD) --</option>
+        <option value="Piantini, Distrito Nacional">Piantini, Distrito Nacional</option>
+        <option value="Naco, Distrito Nacional">Naco, Distrito Nacional</option>
+        <option value="Bella Vista, Distrito Nacional">Bella Vista, Distrito Nacional</option>
+        <option value="Gazcue, Distrito Nacional">Gazcue, Distrito Nacional</option>
+        <option value="Alma Rosa, Santo Domingo Este">Alma Rosa, Santo Domingo Este</option>
+        <option value="Los Mina, Santo Domingo Este">Los Mina, Santo Domingo Este</option>
+        <option value="Villa Mella, Santo Domingo Norte">Villa Mella, Santo Domingo Norte</option>
+        <option value="Herrera, Santo Domingo Oeste">Herrera, Santo Domingo Oeste</option>
+        <option value="Santiago de los Caballeros">Santiago de los Caballeros</option>
+        <option value="La Vega">La Vega</option>
+        <option value="San Cristóbal">San Cristóbal</option>
+        <option value="Puerto Plata">Puerto Plata</option>
+        <option value="Higüey / Punta Cana">Higüey / Punta Cana</option>
+        <option value="La Romana">La Romana</option>
+        <option value="San Pedro de Macorís">San Pedro de Macorís</option>
+        <option value="San Francisco de Macorís">San Francisco de Macorís</option>
+        <option value="Baní">Baní</option>
+        <option value="Bonao">Bonao</option>
+        <option value="Azua">Azua</option>
+        <option value="Barahona">Barahona</option>
+      </select>
+      <input type="text" id="chambaUbicacion" placeholder="O escribe la ubicación personalizada">
+      <input type="number" id="chambaPrecio" placeholder="Presupuesto a pagar en RD$ (ej: 3500)">
+      <textarea id="chambaDescripcion" placeholder="Describe los detalles del trabajo, herramientas requeridas o materiales..."></textarea>
+      
+      <button id="btnPublicarChamba">🚀 Publicar Chamba en Firestore</button>
+    </div>
+  </div>
+
+  <!-- MENSAJE DE ESTADO -->
+  <div id="mensaje"></div>
+
+  <!-- SECCIÓN 3: LISTADO DE CHAMBAS EN TIEMPO REAL -->
+  <div id="listSection" style="margin-top:20px;">
+    <div class="section-title">
+      <span>📋 Chamba Feed en Vivo</span>
+      <span id="chambaCount" style="font-size:12px;color:#888">0 publicaciones</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <select id="filtroProvinciaWeb" style="padding:8px 12px;font-size:13px;border-radius:8px;background:#1e1e1e;border:1px solid #333;color:#fff;flex:1">
+        <option value="Todas">📍 Todas las Provincias (Rep. Dom.)</option>
+        <option value="Distrito Nacional">📍 Distrito Nacional</option>
+        <option value="Santo Domingo Este">📍 Santo Domingo Este</option>
+        <option value="Santo Domingo Norte">📍 Santo Domingo Norte</option>
+        <option value="Santo Domingo Oeste">📍 Santo Domingo Oeste</option>
+        <option value="Santiago">📍 Santiago</option>
+        <option value="La Vega">📍 La Vega</option>
+        <option value="San Cristóbal">📍 San Cristóbal</option>
+        <option value="Puerto Plata">📍 Puerto Plata</option>
+        <option value="Higüey">📍 Higüey / Punta Cana</option>
+        <option value="La Romana">📍 La Romana</option>
+        <option value="San Pedro de Macorís">📍 San Pedro de Macorís</option>
+        <option value="San Francisco de Macorís">📍 San Francisco de Macorís</option>
+        <option value="Baní">📍 Baní</option>
+        <option value="Bonao">📍 Bonao</option>
+        <option value="Azua">📍 Azua</option>
+        <option value="Barahona">📍 Barahona</option>
+      </select>
+    </div>
+    <div id="chambasContainer">
+      <p style="text-align:center;color:#666;font-size:13px;padding:15px">Cargando publicaciones desde Firestore...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs Oficiales para Web -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { 
+    getFirestore, 
+    doc, 
+    setDoc, 
+    getDoc,
+    deleteDoc,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // Configuración oficial de Firebase Web proporcionada
+  const firebaseConfig = {
+    apiKey: "AIzaSyAt8iuuZe4_xNbRiOMRaSt0MxS7xNI67j8",
+    authDomain: "chamba-rd-cef51.firebaseapp.com",
+    projectId: "chamba-rd-cef51",
+    storageBucket: "chamba-rd-cef51.firebasestorage.app",
+    messagingSenderId: "982367861690",
+    appId: "1:982367861690:web:74861ced8515eadbc13b83",
+    measurementId: "G-K292XGLBHC"
+  };
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Elementos DOM
+  const authSection = document.getElementById("authSection");
+  const userPanelSection = document.getElementById("userPanelSection");
+  const userBadge = document.getElementById("userBadge");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const btnRegister = document.getElementById("btnRegister");
+  const btnLogin = document.getElementById("btnLogin");
+  const btnLogout = document.getElementById("btnLogout");
+  const mensajeDiv = document.getElementById("mensaje");
+
+  // Tabs
+  const tabPerfilBtn = document.getElementById("tabPerfilBtn");
+  const tabPublicarBtn = document.getElementById("tabPublicarBtn");
+  const profileFormContainer = document.getElementById("profileFormContainer");
+  const publishFormContainer = document.getElementById("publishFormContainer");
+
+  // Formulario Perfil
+  const perfilNombre = document.getElementById("perfilNombre");
+  const perfilTelefono = document.getElementById("perfilTelefono");
+  const perfilRol = document.getElementById("perfilRol");
+  const perfilUbicacion = document.getElementById("perfilUbicacion");
+  const btnActualizarPerfil = document.getElementById("btnActualizarPerfil");
+
+  // Formulario Chamba
+  const chambaTitulo = document.getElementById("chambaTitulo");
+  const chambaCategoria = document.getElementById("chambaCategoria");
+  const chambaUbicacion = document.getElementById("chambaUbicacion");
+  const chambaPrecio = document.getElementById("chambaPrecio");
+  const chambaDescripcion = document.getElementById("chambaDescripcion");
+  const btnPublicarChamba = document.getElementById("btnPublicarChamba");
+  const chambasContainer = document.getElementById("chambasContainer");
+  const chambaCount = document.getElementById("chambaCount");
+
+  let currentUser = null;
+  let currentUserData = null;
+
+  function mostrarMensaje(texto, esError = false) {
+    mensajeDiv.style.color = esError ? "#ff4d4d" : "#00ff88";
+    mensajeDiv.textContent = texto;
+  }
+
+  // Manejador de Tabs (Perfil vs Publicar)
+  tabPerfilBtn.addEventListener("click", () => {
+    profileFormContainer.classList.remove("hidden");
+    publishFormContainer.classList.add("hidden");
+    tabPerfilBtn.style.background = "#00ff88";
+    tabPerfilBtn.style.color = "#000";
+    tabPublicarBtn.style.background = "#222";
+    tabPublicarBtn.style.color = "#00ff88";
+  });
+
+  tabPublicarBtn.addEventListener("click", () => {
+    publishFormContainer.classList.remove("hidden");
+    profileFormContainer.classList.add("hidden");
+    tabPublicarBtn.style.background = "#00ff88";
+    tabPublicarBtn.style.color = "#000";
+    tabPerfilBtn.style.background = "#222";
+    tabPerfilBtn.style.color = "#00ff88";
+  });
+
+  // Cargar datos de perfil del usuario desde Firestore
+  async function cargarPerfilUsuario(uid, userEmail) {
+    try {
+      const userRef = doc(db, "users", uid);
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        currentUserData = docSnap.data();
+        perfilNombre.value = currentUserData.nombre || "";
+        perfilTelefono.value = currentUserData.telefono || "";
+        if (currentUserData.rol) perfilRol.value = currentUserData.rol;
+        if (currentUserData.ubicacion) perfilUbicacion.value = currentUserData.ubicacion;
+
+        const rolIcon = currentUserData.rol === 'admin' ? '👑 ADMIN:' : '👤';
+        const displayName = currentUserData.nombre ? `${currentUserData.nombre} (${currentUserData.rol || 'cliente'})` : userEmail;
+        userBadge.textContent = `${rolIcon} ${displayName}`;
+      } else {
+        currentUserData = { rol: 'cliente' };
+        userBadge.textContent = `Sesión: ${userEmail}`;
+      }
+    } catch (err) {
+      console.error("Error cargando perfil:", err);
+    }
+  }
+
+  // Escuchar estado de autenticación en tiempo real
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      authSection.classList.add("hidden");
+      userPanelSection.classList.remove("hidden");
+      userBadge.classList.remove("hidden");
+      userBadge.textContent = `Sesión: ${user.email}`;
+      mostrarMensaje(`¡Bienvenido! Completa tu perfil para empezar.`);
+      await cargarPerfilUsuario(user.uid, user.email);
+    } else {
+      authSection.classList.remove("hidden");
+      userPanelSection.classList.add("hidden");
+      userBadge.classList.add("hidden");
+      mostrarMensaje("Inicia sesión o regístrate para publicar o ver tu perfil.");
+    }
+  });
+
+  // 1. REGISTRO EN FIREBASE AUTH + CREACIÓN DE DOCUMENTO EN FIRESTORE
+  btnRegister.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      mostrarMensaje("Por favor ingresa correo y contraseña", true);
+      return;
+    }
+    if (password.length < 6) {
+      mostrarMensaje("La contraseña debe tener al menos 6 caracteres", true);
+      return;
+    }
+
+    try {
+      btnRegister.disabled = true;
+      mostrarMensaje("Registrando usuario...");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Crear documento inicial en Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        nombre: "",
+        telefono: "",
+        rol: "cliente",
+        creadoEn: serverTimestamp()
+      });
+
+      mostrarMensaje(`¡Cuenta creada con éxito! Completa tu nombre y teléfono a continuación.`);
+    } catch (error) {
+      console.error("Auth Error:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        mostrarMensaje("Este correo ya está registrado.", true);
+      } else if (error.code === 'auth/operation-not-allowed') {
+        mostrarMensaje("Habilita Email/Password en Authentication > Sign-in method en Firebase Console.", true);
+      } else if (error.code === 'auth/invalid-email') {
+        mostrarMensaje("El correo no tiene un formato válido.", true);
+      } else {
+        mostrarMensaje(error.message, true);
+      }
+    } finally {
+      btnRegister.disabled = false;
+    }
+  });
+
+  // 2. ACTUALIZAR PERFIL EN FIRESTORE (Nombre, Teléfono, Rol, Ubicación)
+  btnActualizarPerfil.addEventListener("click", async () => {
+    if (!currentUser) {
+      mostrarMensaje("Debes iniciar sesión para actualizar tu perfil", true);
+      return;
+    }
+
+    const nombre = perfilNombre.value.trim();
+    const telefono = perfilTelefono.value.trim();
+    const rol = perfilRol.value;
+    const ubicacion = perfilUbicacion.value.trim();
+
+    if (!nombre) {
+      mostrarMensaje("Por favor escribe tu nombre completo", true);
+      return;
+    }
+
+    try {
+      btnActualizarPerfil.disabled = true;
+      mostrarMensaje("Guardando perfil en Firestore...");
+
+      const datosActualizados = {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        nombre: nombre,
+        telefono: telefono || "",
+        rol: rol || "cliente",
+        ubicacion: ubicacion || "",
+        actualizadoEn: serverTimestamp()
+      };
+
+      // Actualizar / Guardar en el documento 'users/{uid}'
+      await setDoc(doc(db, "users", currentUser.uid), datosActualizados, { merge: true });
+
+      userBadge.textContent = `👤 ${nombre} (${rol})`;
+      mostrarMensaje("¡Perfil guardado y actualizado en Firestore con éxito! 🎉");
+    } catch (error) {
+      console.error("Error al actualizar perfil en Firestore:", error);
+      mostrarMensaje(`Error en Firestore: ${error.message}`, true);
+    } finally {
+      btnActualizarPerfil.disabled = false;
+    }
+  });
+
+  // 2. LOGIN EN FIREBASE AUTH
+  btnLogin.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      mostrarMensaje("Por favor ingresa correo y contraseña", true);
+      return;
+    }
+
+    try {
+      mostrarMensaje("Iniciando sesión...");
+      await signInWithEmailAndPassword(auth, email, password);
+      mostrarMensaje("¡Sesión iniciada!");
+    } catch (error) {
+      console.error("Login error:", error);
+      mostrarMensaje("Correo o contraseña incorrectos", true);
+    }
+  });
+
+  // 3. LOGOUT
+  btnLogout.addEventListener("click", async () => {
+    await signOut(auth);
+    mostrarMensaje("Sesión cerrada.");
+  });
+
+  // 4. CREAR Y PUBLICAR CHAMBA EN FIRESTORE (Colección 'chambas')
+  btnPublicarChamba.addEventListener("click", async () => {
+    if (!currentUser) {
+      mostrarMensaje("Debes iniciar sesión para publicar una chamba", true);
+      return;
+    }
+
+    const titulo = chambaTitulo.value.trim();
+    const categoria = chambaCategoria.value;
+    const ubicacion = chambaUbicacion.value.trim();
+    const precio = parseFloat(chambaPrecio.value) || 0;
+    const descripcion = chambaDescripcion.value.trim();
+
+    if (!titulo || !ubicacion || precio <= 0 || !descripcion) {
+      mostrarMensaje("Por favor completa todos los campos con un precio válido en RD$", true);
+      return;
+    }
+
+    try {
+      mostrarMensaje("Publicando chamba en Firestore...");
+      btnPublicarChamba.disabled = true;
+
+      const nuevaChamba = {
+        titulo: titulo,
+        categoriaNombre: categoria,
+        ubicacion: ubicacion,
+        precio: precio,
+        descripcion: descripcion,
+        clienteId: currentUser.uid,
+        clienteEmail: currentUser.email,
+        estado: "PUBLICADA",
+        fechaCreacion: serverTimestamp(),
+        createdAtMillis: Date.now()
+      };
+
+      // Guardar en la colección 'chambas' de Firestore
+      await addDoc(collection(db, "chambas"), nuevaChamba);
+
+      // Limpiar formulario
+      chambaTitulo.value = "";
+      chambaUbicacion.value = "";
+      chambaPrecio.value = "";
+      chambaDescripcion.value = "";
+
+      mostrarMensaje("¡Chamba publicada con éxito en Firestore! 🎉");
+    } catch (error) {
+      console.error("Error guardando chamba:", error);
+      mostrarMensaje(`Error al guardar en Firestore: ${error.message}`, true);
+    } finally {
+      btnPublicarChamba.disabled = false;
+    }
+  });
+
+  // 5. ESCUCHAR Y MOSTRAR PUBLICACIONES EN TIEMPO REAL DESDE FIRESTORE
+  const chambasQuery = query(collection(db, "chambas"));
+  const filtroProvinciaWeb = document.getElementById("filtroProvinciaWeb");
+  let currentChambasList = [];
+
+  function renderChambas(list) {
+    const filtro = filtroProvinciaWeb ? filtroProvinciaWeb.value : 'Todas';
+    const filtradas = list.filter(item => {
+      if (filtro === 'Todas') return true;
+      return (item.data.ubicacion || '').toLowerCase().includes(filtro.toLowerCase());
+    });
+
+    chambaCount.textContent = `${filtradas.length} de ${list.length} publicaciones`;
+
+    if (filtradas.length === 0) {
+      chambasContainer.innerHTML = `<p style="text-align:center;color:#777;font-size:13px;padding:15px">No se encontraron chambas en <b>${escapeHtml(filtro)}</b>. Prueba seleccionando otra provincia o publica una.</p>`;
+      return;
+    }
+
+    chambasContainer.innerHTML = '';
+
+    filtradas.forEach(({ id: docId, data }) => {
+      const card = document.createElement("div");
+      card.className = "chamba-card";
+      
+      const precioFormateado = "RD$" + Number(data.precio || 0).toLocaleString();
+      const esAdmin = currentUserData && currentUserData.rol === 'admin';
+      const esDueno = currentUser && currentUser.uid === data.clienteId;
+      
+      let adminControlsHtml = '';
+      if (esAdmin || esDueno) {
+        adminControlsHtml = `
+          <button class="btnEliminarChamba danger" data-id="${docId}" style="width:auto;padding:3px 8px;font-size:11px;margin:0 0 0 6px">🗑️ Eliminar</button>
+        `;
+      }
+
+      const whatsAppMsg = encodeURIComponent(`Hola! Vi tu publicación en CHAMBA RD: "${data.titulo || 'Chamba'}" (${precioFormateado}) y me gustaría cotizar/conversar.`);
+      const whatsAppLink = `https://wa.me/18095550199?text=${whatsAppMsg}`;
+
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <h4>${escapeHtml(data.titulo || 'Sin título')}</h4>
+          <div style="display:flex;align-items:center">
+            <span class="badge">${escapeHtml(data.estado || 'PUBLICADA')}</span>
+            ${adminControlsHtml}
+          </div>
+        </div>
+        <p style="color:#00ff88;font-size:12px;font-weight:bold;margin-bottom:4px">🏷️ ${escapeHtml(data.categoriaNombre || 'Servicio')}</p>
+        <p>${escapeHtml(data.descripcion || '')}</p>
+        <div class="chamba-meta">
+          <span>📍 ${escapeHtml(data.ubicacion || 'República Dominicana')} ${data.clienteEmail ? '• 👤 ' + escapeHtml(data.clienteEmail) : ''}</span>
+          <span class="chamba-price">${precioFormateado}</span>
+        </div>
+        <a href="${whatsAppLink}" target="_blank" class="btn-whatsapp">
+          💬 Contactar por WhatsApp
+        </a>
+      `;
+
+      const btnEliminar = card.querySelector(".btnEliminarChamba");
+      if (btnEliminar) {
+        btnEliminar.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const targetId = btnEliminar.getAttribute("data-id");
+          if (confirm("¿Estás seguro de eliminar esta publicación como Administrador?")) {
+            try {
+              await deleteDoc(doc(db, "chambas", targetId));
+              mostrarMensaje("Publicación eliminada de Firestore.");
+            } catch (err) {
+              mostrarMensaje(`Error al eliminar: ${err.message}`, true);
+            }
+          }
+        });
+      }
+
+      chambasContainer.appendChild(card);
+    });
+  }
+
+  if (filtroProvinciaWeb) {
+    filtroProvinciaWeb.addEventListener("change", () => renderChambas(currentChambasList));
+  }
+
+  onSnapshot(chambasQuery, (snapshot) => {
+    currentChambasList = [];
+    snapshot.forEach((docSnap) => {
+      currentChambasList.push({ id: docSnap.id, data: docSnap.data() });
+    });
+    renderChambas(currentChambasList);
+  }, (error) => {
+    console.error("Error escuchando chambas:", error);
+    chambasContainer.innerHTML = `<p style="text-align:center;color:#ff4d4d;font-size:12px;padding:15px">Error al sincronizar con Firestore: ${error.message}</p>`;
+  });
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+</script>
+</body>
+</html>
