@@ -1,0 +1,174 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserData().rol == 'admin';
+    }
+
+    // ============================================================================
+    // 1. Colección de Usuarios y Perfiles (users)
+    // ============================================================================
+    match /users/{userId} {
+      // Lectura pública de perfiles básicos de trabajadores/clientes para listados
+      allow read: if isAuthenticated();
+      
+      // Creación al registrarse: solo el usuario autenticado para su propio UID
+      allow create: if isOwner(userId) 
+                    && (!request.resource.data.keys().hasAny(['rol']) || request.resource.data.rol in ['cliente', 'trabajador']);
+      
+      // Actualización: el propietario puede editar sus datos (sin cambiar su rol), o un admin
+      allow update: if (isOwner(userId) && request.resource.data.rol == resource.data.rol)
+                    || isAdmin();
+                    
+      // Borrado solo permitido por administradores
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================================
+    // 2. Colección de Chambas (chambas)
+    // ============================================================================
+    match /chambas/{chambaId} {
+      // Cualquier usuario autenticado puede leer chambas publicadas
+      allow read: if isAuthenticated();
+      
+      // Solo clientes autenticados pueden crear chambas con su propio clienteId
+      allow create: if isAuthenticated() 
+                    && request.resource.data.clienteId == request.auth.uid;
+      
+      // Actualización: 
+      // - El cliente dueño puede actualizarla
+      // - El trabajador asignado puede actualizar estados de trabajo (evidencia, terminado)
+      // - Un administrador puede intervenir
+      allow update: if isAuthenticated() && (
+                      resource.data.clienteId == request.auth.uid
+                      || resource.data.trabajadorSeleccionadoId == request.auth.uid
+                      || isAdmin()
+                    );
+                    
+      // Solo el creador de la chamba o un admin pueden cancelarla/borrarla
+      allow delete: if isAuthenticated() && (resource.data.clienteId == request.auth.uid || isAdmin());
+    }
+
+    // ============================================================================
+    // 3. Colección de Postulaciones (postulaciones)
+    // ============================================================================
+    match /postulaciones/{postulacionId} {
+      // Lectura permitida si eres el trabajador postulante, el cliente de la chamba o admin
+      allow read: if isAuthenticated() && (
+                    resource.data.trabajadorId == request.auth.uid 
+                    || resource.data.clienteId == request.auth.uid
+                    || isAdmin()
+                  );
+                  
+      // Solo el trabajador puede crear una postulación con su propio ID
+      allow create: if isAuthenticated() 
+                    && request.resource.data.trabajadorId == request.auth.uid;
+                    
+      // Modificación de estado (aceptada/rechazada) por el cliente o el trabajador
+      allow update: if isAuthenticated() && (
+                      resource.data.trabajadorId == request.auth.uid
+                      || resource.data.clienteId == request.auth.uid
+                      || isAdmin()
+                    );
+                    
+      allow delete: if isAuthenticated() && (resource.data.trabajadorId == request.auth.uid || isAdmin());
+    }
+
+    // ============================================================================
+    // 4. Mensajería y Chats (chat_rooms & messages)
+    // ============================================================================
+    match /chat_rooms/{roomId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.clienteId == request.auth.uid 
+                    || resource.data.trabajadorId == request.auth.uid 
+                    || isAdmin()
+                  );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+                      resource.data.clienteId == request.auth.uid 
+                      || resource.data.trabajadorId == request.auth.uid 
+                      || isAdmin()
+                    );
+    }
+    
+    match /messages/{messageId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.senderId == request.auth.uid 
+                    || resource.data.receiverId == request.auth.uid 
+                    || isAdmin()
+                  );
+      allow create: if isAuthenticated() 
+                    && request.resource.data.senderId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.receiverId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================================
+    // 5. Notificaciones (notifications)
+    // ============================================================================
+    match /notifications/{notifId} {
+      allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+    }
+
+    // ============================================================================
+    // 6. Calificaciones y Reseñas (reviews)
+    // ============================================================================
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.autorId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================================
+    // 7. Reportes y Disputas (reports & disputes)
+    // ============================================================================
+    match /reports/{reportId} {
+      allow read: if isAuthenticated() && (resource.data.reporterId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.reporterId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /disputes/{disputeId} {
+      allow read: if isAuthenticated() && (resource.data.creadorId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.creadorId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================================
+    // 8. Pagos y Transacciones (payments)
+    // ============================================================================
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (
+                    resource.data.clienteId == request.auth.uid 
+                    || resource.data.trabajadorId == request.auth.uid 
+                    || isAdmin()
+                  );
+      allow create: if isAuthenticated() && request.resource.data.clienteId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================================
+    // 9. Categorías (categories)
+    // ============================================================================
+    match /categories/{catId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
