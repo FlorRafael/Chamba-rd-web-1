@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "982367861690",
+    "project_id": "chamba-rd-cef51",
+    "storage_bucket": "chamba-rd-cef51.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982367861690:android:3f8e52c96c4d5389",
+        "android_client_info": {
+          "package_name": "com.aistudio.chambard.wkjrpx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAt8iuuZe4_xNbRiOMRaSt0MxS7xNI67j8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
